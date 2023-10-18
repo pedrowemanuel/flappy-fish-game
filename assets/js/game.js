@@ -1,5 +1,7 @@
+const host = "https://pedrowemanuel.github.io/flappy-fish-game/";
+
 const sprites = new Image();
-sprites.src = "/assets/images/sprites.png";
+sprites.src = host + "assets/images/sprites.png";
 
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
@@ -10,7 +12,7 @@ const background = {
   width: 275,
   height: 204,
   x: 0,
-  y: canvas.height - 204,
+  y: canvas.height - this.height,
   draw() {
     context.fillStyle = "#2FE6FF";
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -82,27 +84,32 @@ const flappyFish = {
   height: 24,
   x: 10,
   y: 50,
+  speed: 0,
+  gravity: 0.25,
+  update() {
+    this.speed += this.gravity;
+    this.y += this.speed;
+  },
   draw() {
     context.drawImage(
       sprites,
-      flappyFish.spriteX,
-      flappyFish.spriteY, // Sprite X, Sprite Y
-      flappyFish.width,
-      flappyFish.height, // Tamanho do recorte na sprite
-      flappyFish.x,
-      flappyFish.y,
-      flappyFish.width,
-      flappyFish.height
+      this.spriteX,
+      this.spriteY,
+      this.width,
+      this.height,
+      this.x,
+      this.y,
+      this.width,
+      this.height
     );
   },
 };
 
 function loop() {
+  flappyFish.update();
   background.draw();
   floor.draw();
   flappyFish.draw();
-
-  flappyFish.y = flappyFish.y + 1;
 
   requestAnimationFrame(loop);
 }

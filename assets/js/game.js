@@ -12,7 +12,7 @@ const background = {
   width: 275,
   height: 204,
   x: 0,
-  y: canvas.height - this.height,
+  y: canvas.height - 204,
   draw() {
     context.fillStyle = "#2FE6FF";
     context.fillRect(0, 0, canvas.width, canvas.height);

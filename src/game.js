@@ -99,7 +99,7 @@ const createFlappyFish = ({ canvas, context, sprites }) => ({
   x: 10,
   y: 50,
   speed: 0,
-  gravity: 0.25,
+  gravity: 0.1,
   update() {
     this.speed += this.gravity;
     this.y += this.speed;

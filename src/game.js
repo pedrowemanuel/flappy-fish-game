@@ -124,11 +124,15 @@ const changeScreen = (screen) => {
   activeScreen = screen;
 };
 
-window.addEventListener("click", () => {
-  if (activeScreen.click != undefined) {
-    activeScreen.click();
+const tap = () => {
+  if (activeScreen.tap != undefined) {
+    activeScreen.tap();
   }
-});
+};
+
+window.addEventListener("click", tap);
+
+window.addEventListener("keyup", tap);
 
 const game = (settings) => {
   settings.context = canvas.getContext("2d");
@@ -146,7 +150,7 @@ const game = (settings) => {
         flappyFish.draw();
         messageGetReady.draw();
       },
-      click: () => {
+      tap: () => {
         changeScreen(screens.GAME);
       },
       update: () => {},

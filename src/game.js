@@ -1,3 +1,13 @@
+const collided = (element, floor) => {
+  const elementY = element.y + element.height;
+
+  if (elementY >= floor.y) {
+    return true;
+  }
+
+  return false;
+};
+
 const createBackground = ({ canvas, context, sprites }) => ({
   spriteX: 390,
   spriteY: 0,
@@ -99,7 +109,8 @@ const createFlappyFish = ({ canvas, context, sprites }) => ({
   x: 10,
   y: 50,
   speed: 0,
-  gravity: 0.1,
+  gravity: 0.2,
+  impulseSize: 3.6,
   update() {
     this.speed += this.gravity;
     this.y += this.speed;
@@ -116,6 +127,9 @@ const createFlappyFish = ({ canvas, context, sprites }) => ({
       this.width,
       this.height
     );
+  },
+  swimUp() {
+    this.speed = -this.impulseSize;
   },
 });
 
@@ -138,8 +152,8 @@ const game = (settings) => {
   settings.context = canvas.getContext("2d");
 
   const background = createBackground(settings);
-  const flappyFish = createFlappyFish(settings);
   const floor = createFloor(settings);
+  const flappyFish = createFlappyFish(settings, floor);
   const messageGetReady = createMessageGetReady(settings);
 
   const screens = {
@@ -161,7 +175,14 @@ const game = (settings) => {
         floor.draw();
         flappyFish.draw();
       },
+      tap: () => {
+        flappyFish.swimUp();
+      },
       update: () => {
+        if (collided(flappyFish, floor)) {
+          changeScreen(screens.START);
+          return;
+        }
         flappyFish.update();
       },
     },

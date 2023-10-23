@@ -101,7 +101,7 @@ const createMessageGetReady = ({ canvas, context, sprites }) => ({
   },
 });
 
-const createFlappyFish = ({ canvas, context, sprites }) => ({
+const createFlappyFish = ({ context, sprites }) => ({
   spriteX: 0,
   spriteY: 0,
   width: 33,
@@ -133,35 +133,44 @@ const createFlappyFish = ({ canvas, context, sprites }) => ({
   },
 });
 
-let activeScreen = {};
-const changeScreen = (screen) => {
-  activeScreen = screen;
-};
-
-const tap = () => {
-  if (activeScreen.tap != undefined) {
-    activeScreen.tap();
-  }
-};
-
-window.addEventListener("click", tap);
-
-window.addEventListener("keyup", tap);
-
 const game = (settings) => {
+  const globals = {};
+
+  let activeScreen = {};
+  const changeScreen = (screen) => {
+    activeScreen = screen;
+
+    if (screen.initialize) {
+      screen.initialize();
+    }
+  };
+
+  const tap = () => {
+    if (activeScreen.tap != undefined) {
+      activeScreen.tap();
+    }
+  };
+
+  const listenEvents = () => {
+    window.addEventListener("click", tap);
+    window.addEventListener("keyup", tap);
+  };
+
   settings.context = canvas.getContext("2d");
 
   const background = createBackground(settings);
   const floor = createFloor(settings);
-  const flappyFish = createFlappyFish(settings, floor);
   const messageGetReady = createMessageGetReady(settings);
 
   const screens = {
     START: {
+      initialize: () => {
+        globals.flappyFish = createFlappyFish(settings, floor);
+      },
       draw: () => {
         background.draw();
         floor.draw();
-        flappyFish.draw();
+        globals.flappyFish.draw();
         messageGetReady.draw();
       },
       tap: () => {
@@ -173,17 +182,18 @@ const game = (settings) => {
       draw: () => {
         background.draw();
         floor.draw();
-        flappyFish.draw();
+        globals.flappyFish.draw();
       },
       tap: () => {
-        flappyFish.swimUp();
+        globals.flappyFish.swimUp();
       },
       update: () => {
-        if (collided(flappyFish, floor)) {
+        if (collided(globals.flappyFish, floor)) {
+          settings.sounds.hit.play();
           changeScreen(screens.START);
           return;
         }
-        flappyFish.update();
+        globals.flappyFish.update();
       },
     },
   };
@@ -198,6 +208,7 @@ const game = (settings) => {
     start: () => {
       changeScreen(screens.START);
       loop();
+      listenEvents();
     },
   };
 };

@@ -11,17 +11,28 @@
 
     <script src="./src/game.js"></script>
     <script>
-      const url = window.location.href;
       const sprites = new Image();
-      sprites.src = url + "assets/images/sprites.png";
+      sprites.src = "./assets/images/sprites.png";
+
       const canvas = document.querySelector("canvas");
+      const sounds = {
+        hit: new Audio("./assets/audios/effects/hit.wav"),
+      };
 
       const settings = {
         canvas,
         sprites,
+        sounds,
       };
 
-      game(settings).start();
+      const newGame = game(settings);
+
+      try {
+        newGame.start();
+      } catch (error) {
+        console.warn(error);
+        newGame.start();
+      }
     </script>
   </body>
 </html>

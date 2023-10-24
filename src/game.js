@@ -52,7 +52,25 @@ const createFloor = ({ canvas, context, sprites }) => ({
   height: 112,
   x: 0,
   y: canvas.height - 112,
+  update() {
+    const floorMovement = 5;
+    const repeatIn = this.width / 3;
+    const movement = this.x - floorMovement;
+    this.x = movement % repeatIn;
+  },
   draw() {
+    context.drawImage(
+      sprites,
+      this.spriteX,
+      this.spriteY,
+      this.width,
+      this.height,
+      this.x,
+      this.y,
+      this.width,
+      this.height
+    );
+
     context.drawImage(
       sprites,
       this.spriteX,
@@ -109,7 +127,7 @@ const createFlappyFish = ({ context, sprites }) => ({
   x: 10,
   y: 50,
   speed: 0,
-  gravity: 0.2,
+  gravity: 0.15,
   impulseSize: 3.6,
   update() {
     this.speed += this.gravity;
@@ -159,41 +177,44 @@ const game = (settings) => {
   settings.context = canvas.getContext("2d");
 
   const background = createBackground(settings);
-  const floor = createFloor(settings);
   const messageGetReady = createMessageGetReady(settings);
 
   const screens = {
     START: {
       initialize: () => {
-        globals.flappyFish = createFlappyFish(settings, floor);
+        globals.floor = createFloor(settings);
+        globals.flappyFish = createFlappyFish(settings, globals.floor);
       },
       draw: () => {
         background.draw();
-        floor.draw();
+        globals.floor.draw();
         globals.flappyFish.draw();
         messageGetReady.draw();
       },
       tap: () => {
         changeScreen(screens.GAME);
       },
-      update: () => {},
+      update: () => {
+        globals.floor.update();
+      },
     },
     GAME: {
       draw: () => {
         background.draw();
-        floor.draw();
+        globals.floor.draw();
         globals.flappyFish.draw();
       },
       tap: () => {
         globals.flappyFish.swimUp();
       },
       update: () => {
-        if (collided(globals.flappyFish, floor)) {
+        if (collided(globals.flappyFish, globals.floor)) {
           settings.sounds.hit.play();
           changeScreen(screens.START);
           return;
         }
         globals.flappyFish.update();
+        globals.floor.update();
       },
     },
   };

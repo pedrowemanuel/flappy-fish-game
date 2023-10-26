@@ -122,22 +122,39 @@ const createMessageGetReady = ({ canvas, context, sprites }) => ({
 const createFlappyFish = ({ context, sprites }) => ({
   spriteX: 0,
   spriteY: 0,
-  width: 33,
-  height: 24,
+  width: 32,
+  height: 25,
   x: 10,
   y: 50,
   speed: 0,
   gravity: 0.15,
   impulseSize: 3.6,
+  movements: [
+    { spriteX: 0, spriteY: 0 },
+    { spriteX: 0, spriteY: 26 },
+    { spriteX: 0, spriteY: 52 },
+  ],
+  currentFrame: 0,
+  setCurrentFrame(frames = 0) {
+    const frameRange = 10;
+    const passedTheBreak = frames % frameRange === 0;
+
+    if (passedTheBreak) {
+      const quantityOfMovements = this.movements.length;
+      this.currentFrame = frames % quantityOfMovements;
+    }
+  },
   update() {
     this.speed += this.gravity;
     this.y += this.speed;
   },
-  draw() {
+  draw(frames = 0) {
+    this.setCurrentFrame(frames);
+    const { spriteX, spriteY } = this.movements[this.currentFrame];
     context.drawImage(
       sprites,
-      this.spriteX,
-      this.spriteY,
+      spriteX,
+      spriteY,
       this.width,
       this.height,
       this.x,
@@ -153,6 +170,7 @@ const createFlappyFish = ({ context, sprites }) => ({
 
 const game = (settings) => {
   const globals = {};
+  let frames = 0;
 
   let activeScreen = {};
   const changeScreen = (screen) => {
@@ -188,7 +206,7 @@ const game = (settings) => {
       draw: () => {
         background.draw();
         globals.floor.draw();
-        globals.flappyFish.draw();
+        globals.flappyFish.draw(frames);
         messageGetReady.draw();
       },
       tap: () => {
@@ -202,7 +220,7 @@ const game = (settings) => {
       draw: () => {
         background.draw();
         globals.floor.draw();
-        globals.flappyFish.draw();
+        globals.flappyFish.draw(frames);
       },
       tap: () => {
         globals.flappyFish.swimUp();
@@ -222,6 +240,8 @@ const game = (settings) => {
   function loop() {
     activeScreen.update();
     activeScreen.draw();
+
+    frames += 1;
     requestAnimationFrame(loop);
   }
 

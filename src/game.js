@@ -16,7 +16,7 @@ const createBackground = ({ canvas, context, sprites }) => ({
   x: 0,
   y: canvas.height - 204,
   draw() {
-    context.fillStyle = "#125c81";
+    context.fillStyle = "#008EBA";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     context.drawImage(
@@ -37,7 +37,7 @@ const createBackground = ({ canvas, context, sprites }) => ({
       this.spriteY,
       this.width,
       this.height,
-      this.x + this.width,
+      this.x + this.width - 10,
       this.y,
       this.width,
       this.height
@@ -53,8 +53,8 @@ const createFloor = ({ canvas, context, sprites }) => ({
   x: 0,
   y: canvas.height - 112,
   update() {
-    const floorMovement = 5;
-    const repeatIn = this.width / 3;
+    const floorMovement = 1.7;
+    const repeatIn = this.width / 1.7;
     const movement = this.x - floorMovement;
     this.x = movement % repeatIn;
   },
@@ -70,19 +70,6 @@ const createFloor = ({ canvas, context, sprites }) => ({
       this.width,
       this.height
     );
-
-    context.drawImage(
-      sprites,
-      this.spriteX,
-      this.spriteY,
-      this.width,
-      this.height,
-      this.x,
-      this.y,
-      this.width,
-      this.height
-    );
-
     context.drawImage(
       sprites,
       this.spriteX,
@@ -94,11 +81,22 @@ const createFloor = ({ canvas, context, sprites }) => ({
       this.width,
       this.height
     );
+    context.drawImage(
+      sprites,
+      this.spriteX,
+      this.spriteY,
+      this.width,
+      this.height,
+      this.x + this.width - 23,
+      this.y,
+      this.width,
+      this.height
+    );
   },
 });
 
 const createMessageGetReady = ({ canvas, context, sprites }) => ({
-  spriteX: 134,
+  spriteX: 130,
   spriteY: 0,
   width: 174,
   height: 152,
@@ -127,8 +125,8 @@ const createFlappyFish = ({ context, sprites }) => ({
   x: 10,
   y: 50,
   speed: 0,
-  gravity: 0.15,
-  impulseSize: 3.6,
+  gravity: 0.1,
+  impulseSize: 3.4,
   movements: [
     { spriteX: 0, spriteY: 0 },
     { spriteX: 0, spriteY: 26 },
@@ -168,6 +166,104 @@ const createFlappyFish = ({ context, sprites }) => ({
   },
 });
 
+const createPipes = ({ canvas, context, sprites }) => ({
+  width: 52,
+  height: 283,
+  bottom: {
+    spriteX: 0,
+    spriteY: 169,
+  },
+  top: {
+    spriteX: 52,
+    spriteY: 169,
+  },
+  minSpace: 75,
+  space: 90,
+  pairs: [],
+  draw() {
+    this.pairs.forEach((pair) => {
+      const yRandom = pair.y;
+
+      const topPipeX = pair.x;
+      const topPipeY = 0 + yRandom;
+      context.drawImage(
+        sprites,
+        this.top.spriteX,
+        this.top.spriteY,
+        this.width,
+        this.height,
+        topPipeX,
+        topPipeY,
+        this.width,
+        this.height
+      );
+
+      const bottomPipeX = pair.x;
+      const bottomPipeY = this.height + this.space + yRandom;
+      context.drawImage(
+        sprites,
+        this.bottom.spriteX,
+        this.bottom.spriteY,
+        this.width,
+        this.height,
+        bottomPipeX,
+        bottomPipeY,
+        this.width,
+        this.height
+      );
+
+      pair.topPipe = {
+        x: topPipeX,
+        y: this.height + topPipeY,
+      };
+
+      pair.bottomPipe = {
+        x: bottomPipeX,
+        y: bottomPipeY,
+      };
+    });
+  },
+  collidedWithTheFlappyFish(pairPipes, flappyFish) {
+    const flappyHead = flappyFish.y;
+    const flappyFoot = flappyFish.y + flappyFish.height;
+
+    if (flappyFish.x >= pairPipes.x) {
+      if (flappyHead <= pairPipes.topPipe.y) {
+        return true;
+      }
+
+      if (flappyFoot >= pairPipes.bottomPipe.y) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+  update(frames = 0, flappyFish = null, gameOver = () => {}) {
+    const intervalFrames = 100;
+    const passedIntervalFrames = frames % intervalFrames === 0;
+
+    if (passedIntervalFrames) {
+      this.pairs.push({
+        x: canvas.width,
+        y: -40 * (Math.random() * 5 + 1),
+      });
+    }
+
+    this.pairs.forEach((pair) => {
+      pair.x = pair.x - 2;
+
+      if (this.collidedWithTheFlappyFish(pair, flappyFish)) {
+        gameOver();
+      }
+
+      if (pair.x + this.width <= 0) {
+        this.pairs.shift();
+      }
+    });
+  },
+});
+
 const game = (settings) => {
   const globals = {};
   let frames = 0;
@@ -181,6 +277,12 @@ const game = (settings) => {
     }
   };
 
+  const gameOver = () => {
+    settings.sounds.hit.play();
+
+    changeScreen(screens.START);
+  };
+
   const tap = () => {
     if (activeScreen.tap != undefined) {
       activeScreen.tap();
@@ -188,7 +290,7 @@ const game = (settings) => {
   };
 
   const listenEvents = () => {
-    window.addEventListener("click", tap);
+    document.querySelector("canvas").addEventListener("click", tap);
     window.addEventListener("keyup", tap);
   };
 
@@ -202,6 +304,7 @@ const game = (settings) => {
       initialize: () => {
         globals.floor = createFloor(settings);
         globals.flappyFish = createFlappyFish(settings, globals.floor);
+        globals.pipes = createPipes(settings);
       },
       draw: () => {
         background.draw();
@@ -219,6 +322,7 @@ const game = (settings) => {
     GAME: {
       draw: () => {
         background.draw();
+        globals.pipes.draw();
         globals.floor.draw();
         globals.flappyFish.draw(frames);
       },
@@ -227,12 +331,16 @@ const game = (settings) => {
       },
       update: () => {
         if (collided(globals.flappyFish, globals.floor)) {
-          settings.sounds.hit.play();
-          changeScreen(screens.START);
+          gameOver();
           return;
         }
-        globals.flappyFish.update();
+
+        globals.pipes.update(frames, globals.flappyFish, () => {
+          gameOver();
+        });
+
         globals.floor.update();
+        globals.flappyFish.update();
       },
     },
   };

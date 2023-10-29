@@ -1,12 +1,21 @@
-body {
-    min-height: 100vh;
+.container-game {
+    min-height: 90vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
 }
 
 canvas {
     border: 1px solid #000;
     display: block;
     margin: 0 auto;
+}
+
+.footer {
+    min-height: 5vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
 }

@@ -178,7 +178,7 @@ const createPipes = ({ canvas, context, sprites }) => ({
     spriteY: 169,
   },
   minSpace: 75,
-  space: 90,
+  space: 100,
   pairs: [],
   draw() {
     this.pairs.forEach((pair) => {
@@ -327,6 +327,8 @@ const game = (settings) => {
         globals.flappyFish.draw(frames);
       },
       tap: () => {
+        settings.sounds.up.play();
+
         globals.flappyFish.swimUp();
       },
       update: () => {

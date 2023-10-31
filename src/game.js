@@ -117,6 +117,28 @@ const createMessageGetReady = ({ canvas, context, sprites }) => ({
   },
 });
 
+const createMessageGameOver = ({ canvas, context, sprites }) => ({
+  spriteX: 134,
+  spriteY: 153,
+  width: 226,
+  height: 200,
+  x: canvas.width / 2 - 226 / 2,
+  y: 50,
+  draw() {
+    context.drawImage(
+      sprites,
+      this.spriteX,
+      this.spriteY,
+      this.width,
+      this.height,
+      this.x,
+      this.y,
+      this.width,
+      this.height
+    );
+  },
+});
+
 const createFlappyFish = ({ context, sprites }) => ({
   spriteX: 0,
   spriteY: 0,
@@ -177,7 +199,7 @@ const createPipes = ({ canvas, context, sprites }) => ({
     spriteX: 52,
     spriteY: 169,
   },
-  minSpace: 75,
+  minSpace: 80,
   space: 100,
   pairs: [],
   draw() {
@@ -226,13 +248,14 @@ const createPipes = ({ canvas, context, sprites }) => ({
   collidedWithTheFlappyFish(pairPipes, flappyFish) {
     const flappyHead = flappyFish.y;
     const flappyFoot = flappyFish.y + flappyFish.height;
+    const collisionAdjustment = 7;
 
-    if (flappyFish.x >= pairPipes.x) {
-      if (flappyHead <= pairPipes.topPipe.y) {
+    if (flappyFish.x + flappyFish.width - 5 >= pairPipes.x) {
+      if (flappyHead + collisionAdjustment <= pairPipes.topPipe.y) {
         return true;
       }
 
-      if (flappyFoot >= pairPipes.bottomPipe.y) {
+      if (flappyFoot - collisionAdjustment >= pairPipes.bottomPipe.y) {
         return true;
       }
     }
@@ -241,6 +264,15 @@ const createPipes = ({ canvas, context, sprites }) => ({
   },
   update(frames = 0, flappyFish = null, gameOver = () => {}) {
     const intervalFrames = 100;
+
+    if (frames === intervalFrames * 100) {
+      this.space = this.space - 10;
+    }
+
+    if (frames === intervalFrames * 300) {
+      this.space = this.space - 10;
+    }
+
     const passedIntervalFrames = frames % intervalFrames === 0;
 
     if (passedIntervalFrames) {
@@ -264,6 +296,26 @@ const createPipes = ({ canvas, context, sprites }) => ({
   },
 });
 
+const createScoreBoard = ({ canvas, context }) => ({
+  score: 0,
+  x: canvas.width - 10,
+  y: 35,
+  draw() {
+    context.font = "35px 'VT323'";
+    context.textAlign = "right";
+    context.fillStyle = "white";
+    context.fillText(`${this.score}`, this.x, this.y);
+  },
+  update(frames = 0) {
+    const intervalFrames = 20;
+    const passedIntervalFrames = frames % intervalFrames === 0;
+
+    if (passedIntervalFrames) {
+      this.score++;
+    }
+  },
+});
+
 const game = (settings) => {
   const globals = {};
   let frames = 0;
@@ -280,7 +332,7 @@ const game = (settings) => {
   const gameOver = () => {
     settings.sounds.hit.play();
 
-    changeScreen(screens.START);
+    changeScreen(screens.GAME_OVER);
   };
 
   const tap = () => {
@@ -298,6 +350,7 @@ const game = (settings) => {
 
   const background = createBackground(settings);
   const messageGetReady = createMessageGetReady(settings);
+  const messageGameOver = createMessageGameOver(settings);
 
   const screens = {
     START: {
@@ -320,11 +373,15 @@ const game = (settings) => {
       },
     },
     GAME: {
+      initialize: () => {
+        globals.scoreBoard = createScoreBoard(settings);
+      },
       draw: () => {
         background.draw();
         globals.pipes.draw();
         globals.floor.draw();
         globals.flappyFish.draw(frames);
+        globals.scoreBoard.draw();
       },
       tap: () => {
         settings.sounds.up.play();
@@ -343,7 +400,17 @@ const game = (settings) => {
 
         globals.floor.update();
         globals.flappyFish.update();
+        globals.scoreBoard.update(frames);
       },
+    },
+    GAME_OVER: {
+      draw: () => {
+        messageGameOver.draw();
+      },
+      tap: () => {
+        changeScreen(screens.START);
+      },
+      update: () => {},
     },
   };
 

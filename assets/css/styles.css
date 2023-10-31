@@ -1,5 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+body {
+    font-family: 'VT323';
+}
+
 .container-game {
-    min-height: 90vh;
+    min-height: 85vh;
     display: flex;
     justify-content: center;
     align-items: center;

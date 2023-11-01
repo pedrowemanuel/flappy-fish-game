@@ -9,14 +9,14 @@ const collided = (element, floor) => {
 };
 
 const createBackground = ({ canvas, context, sprites }) => ({
-  spriteX: 390,
+  spriteX: 387,
   spriteY: 0,
-  width: 275,
-  height: 204,
+  width: 320,
+  height: 480,
   x: 0,
-  y: canvas.height - 204,
+  y: 0,
   draw() {
-    context.fillStyle = "#008EBA";
+    context.fillStyle = "#3E6090";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     context.drawImage(
@@ -26,18 +26,6 @@ const createBackground = ({ canvas, context, sprites }) => ({
       this.width,
       this.height,
       this.x,
-      this.y,
-      this.width,
-      this.height
-    );
-
-    context.drawImage(
-      sprites,
-      this.spriteX,
-      this.spriteY,
-      this.width,
-      this.height,
-      this.x + this.width - 10,
       this.y,
       this.width,
       this.height
@@ -202,6 +190,7 @@ const createPipes = ({ canvas, context, sprites }) => ({
   minSpace: 80,
   space: 100,
   pairs: [],
+  intervalFrames: 110,
   draw() {
     this.pairs.forEach((pair) => {
       const yRandom = pair.y;
@@ -262,18 +251,33 @@ const createPipes = ({ canvas, context, sprites }) => ({
 
     return false;
   },
+  changeDifficult(frames) {
+    const intervalToOvertakeAPipe = 75;
+    const difficulties = {
+      easy: this.intervalFrames * 5 + intervalToOvertakeAPipe,
+      medium: this.intervalFrames * 10 + intervalToOvertakeAPipe,
+      difficult: this.intervalFrames * 20 + intervalToOvertakeAPipe,
+      veryDifficult: this.intervalFrames * 30 + intervalToOvertakeAPipe,
+    };
+
+    if (frames === difficulties.easy) {
+      this.space = this.space - 5;
+    }
+
+    if (frames === difficulties.medium) {
+      this.space = this.space - 5;
+    }
+
+    if (frames === difficulties.difficult) {
+      this.space = this.space - 5;
+    }
+
+    if (frames === difficulties.veryDifficult) {
+      this.space = this.space - 5;
+    }
+  },
   update(frames = 0, flappyFish = null, gameOver = () => {}) {
-    const intervalFrames = 100;
-
-    if (frames === intervalFrames * 100) {
-      this.space = this.space - 10;
-    }
-
-    if (frames === intervalFrames * 300) {
-      this.space = this.space - 10;
-    }
-
-    const passedIntervalFrames = frames % intervalFrames === 0;
+    const passedIntervalFrames = frames % this.intervalFrames === 0;
 
     if (passedIntervalFrames) {
       this.pairs.push({
@@ -293,6 +297,8 @@ const createPipes = ({ canvas, context, sprites }) => ({
         this.pairs.shift();
       }
     });
+
+    this.changeDifficult(frames);
   },
 });
 
@@ -408,6 +414,7 @@ const game = (settings) => {
         messageGameOver.draw();
       },
       tap: () => {
+        frames = 0;
         changeScreen(screens.START);
       },
       update: () => {},

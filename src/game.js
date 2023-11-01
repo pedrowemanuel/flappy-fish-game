@@ -239,14 +239,33 @@ const createPipes = ({ canvas, context, sprites }) => ({
     const flappyFoot = flappyFish.y + flappyFish.height;
     const collisionAdjustment = 7;
 
-    if (flappyFish.x + flappyFish.width - 5 >= pairPipes.x) {
-      if (flappyHead + collisionAdjustment <= pairPipes.topPipe.y) {
+    const isInThePipeArea =
+      (flappyFish.x + flappyFish.width - 5 >= pairPipes.x) &
+      (flappyFish.x < pairPipes.x + this.width);
+
+    if (isInThePipeArea) {
+      const collidedOnTop =
+        flappyHead + collisionAdjustment <= pairPipes.topPipe.y;
+      if (collidedOnTop) {
         return true;
       }
 
-      if (flappyFoot - collisionAdjustment >= pairPipes.bottomPipe.y) {
+      const collidedOnBotton =
+        flappyFoot - collisionAdjustment >= pairPipes.bottomPipe.y;
+      if (collidedOnBotton) {
         return true;
       }
+    }
+
+    return false;
+  },
+  flappyPassedThePipeArea(pairPipes, flappyFish) {
+    const passedThePipeArea =
+      flappyFish.x + flappyFish.width - 5 >= pairPipes.x &&
+      flappyFish.x === pairPipes.x + this.width + 4;
+
+    if (passedThePipeArea) {
+      return true;
     }
 
     return false;
@@ -276,7 +295,12 @@ const createPipes = ({ canvas, context, sprites }) => ({
       this.space = this.space - 5;
     }
   },
-  update(frames = 0, flappyFish = null, gameOver = () => {}) {
+  update(
+    frames = 0,
+    flappyFish = null,
+    gameOver = () => {},
+    makePoint = () => {}
+  ) {
     const passedIntervalFrames = frames % this.intervalFrames === 0;
 
     if (passedIntervalFrames) {
@@ -291,6 +315,11 @@ const createPipes = ({ canvas, context, sprites }) => ({
 
       if (this.collidedWithTheFlappyFish(pair, flappyFish)) {
         gameOver();
+      }
+
+      if (this.flappyPassedThePipeArea(pair, flappyFish)) {
+        console.log("c");
+        makePoint();
       }
 
       if (pair.x + this.width <= 0) {
@@ -312,13 +341,8 @@ const createScoreBoard = ({ canvas, context }) => ({
     context.fillStyle = "white";
     context.fillText(`${this.score}`, this.x, this.y);
   },
-  update(frames = 0) {
-    const intervalFrames = 20;
-    const passedIntervalFrames = frames % intervalFrames === 0;
-
-    if (passedIntervalFrames) {
-      this.score++;
-    }
+  update() {
+    this.score++;
   },
 });
 
@@ -400,13 +424,20 @@ const game = (settings) => {
           return;
         }
 
-        globals.pipes.update(frames, globals.flappyFish, () => {
-          gameOver();
-        });
+        globals.pipes.update(
+          frames,
+          globals.flappyFish,
+          () => {
+            gameOver();
+          },
+          () => {
+            globals.scoreBoard.update();
+            settings.sounds.point.play();
+          }
+        );
 
         globals.floor.update();
         globals.flappyFish.update();
-        globals.scoreBoard.update(frames);
       },
     },
     GAME_OVER: {

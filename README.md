@@ -12,9 +12,9 @@ Inspirado no famoso Flappy Bird, Flappy Fish é um jogo que se passa em um ambie
 
 ### Diferenças em relação jogo original
 
-- Velocidade na queda menor, já que o jogo se passa na água e não no mar
-- O pulo pode ser feito tanto clicando na tela como teclando qualquer tecla
-- Código refatorado com boas práticas e escrito em inglês
-- Novas Sprites com foco no peixinho que movimenta tanto a nadadeira como o cauda
-- Som de bolhas movimentar o peixe
-- Dificuldade aumenta gradualmente
+- Velocidade da queda menor, já que o jogo se passa na água e não no mar;
+- O pulo pode ser feito tanto clicando na tela como teclando qualquer tecla;
+- Código refatorado com boas práticas e escrito em inglês;
+- Novas Sprites com foco no peixinho que movimenta tanto a nadadeira como a cauda;
+- Som de bolhas ao movimentar o peixe;
+- Dificuldade do jogo aumenta gradualmente;

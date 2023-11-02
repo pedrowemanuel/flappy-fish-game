@@ -112,7 +112,26 @@ const createMessageGameOver = ({ canvas, context, sprites }) => ({
   height: 200,
   x: canvas.width / 2 - 226 / 2,
   y: 50,
-  draw(score = 0, bestScore = 0, medal = {}) {
+  medalSize: 41,
+  medals: {
+    steel: {
+      x: 48,
+      y: 79,
+    },
+    bronze: {
+      x: 48,
+      y: 124,
+    },
+    silver: {
+      x: 0,
+      y: 79,
+    },
+    gold: {
+      x: 0,
+      y: 124,
+    },
+  },
+  draw(score = 0, bestScore = 0) {
     context.drawImage(
       sprites,
       this.spriteX,
@@ -124,6 +143,30 @@ const createMessageGameOver = ({ canvas, context, sprites }) => ({
       this.width,
       this.height
     );
+
+    const drawMedal = (score, context) => {
+      let medal = this.medals.steel;
+
+      if (score >= 5 && score < 10) {
+        medal = this.medals.bronze;
+      } else if (score >= 10 && score < 20) {
+        medal = this.medals.silver;
+      } else if (score >= 20) {
+        medal = this.medals.gold;
+      }
+
+      context.drawImage(
+        sprites,
+        medal.x,
+        medal.y,
+        this.medalSize,
+        this.medalSize,
+        this.x + 24,
+        this.y + 89,
+        this.medalSize,
+        this.medalSize
+      );
+    };
 
     const drawScore = (score, context) => {
       context.font = "25px 'VT323'";
@@ -141,6 +184,7 @@ const createMessageGameOver = ({ canvas, context, sprites }) => ({
 
     drawScore(score, context);
     drawBestScore(bestScore, context);
+    drawMedal(score, context);
   },
 });
 

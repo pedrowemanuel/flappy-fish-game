@@ -34,15 +34,15 @@ const createBackground = ({ canvas, context, sprites }) => ({
 });
 
 const createFloor = ({ canvas, context, sprites }) => ({
-  spriteX: 0,
+  spriteX: 4,
   spriteY: 610,
-  width: 224,
+  width: 707,
   height: 112,
   x: 0,
   y: canvas.height - 112,
   update() {
     const floorMovement = 1.7;
-    const repeatIn = this.width / 1.7;
+    const repeatIn = this.width / 1.1;
     const movement = this.x - floorMovement;
     this.x = movement % repeatIn;
   },
@@ -58,17 +58,17 @@ const createFloor = ({ canvas, context, sprites }) => ({
       this.width,
       this.height
     );
-    context.drawImage(
-      sprites,
-      this.spriteX,
-      this.spriteY,
-      this.width,
-      this.height,
-      this.x + this.width,
-      this.y,
-      this.width,
-      this.height
-    );
+    // context.drawImage(
+    //   sprites,
+    //   this.spriteX,
+    //   this.spriteY,
+    //   this.width,
+    //   this.height,
+    //   this.x + this.width,
+    //   this.y,
+    //   this.width,
+    //   this.height
+    // );
     context.drawImage(
       sprites,
       this.spriteX,
@@ -112,7 +112,7 @@ const createMessageGameOver = ({ canvas, context, sprites }) => ({
   height: 200,
   x: canvas.width / 2 - 226 / 2,
   y: 50,
-  draw() {
+  draw(score = 0, bestScore = 0, medal = {}) {
     context.drawImage(
       sprites,
       this.spriteX,
@@ -124,6 +124,23 @@ const createMessageGameOver = ({ canvas, context, sprites }) => ({
       this.width,
       this.height
     );
+
+    const drawScore = (score, context) => {
+      context.font = "25px 'VT323'";
+      context.textAlign = "right";
+      context.fillStyle = "#CD993C";
+      context.fillText(`${score}`, this.x + this.width - 23, this.y + 93);
+    };
+
+    const drawBestScore = (bestScore, context) => {
+      context.font = "25px 'VT323'";
+      context.textAlign = "right";
+      context.fillStyle = "#CD993C";
+      context.fillText(`${bestScore}`, this.x + this.width - 23, this.y + 135);
+    };
+
+    drawScore(score, context);
+    drawBestScore(bestScore, context);
   },
 });
 
@@ -348,6 +365,15 @@ const createScoreBoard = ({ canvas, context }) => ({
 
 const game = (settings) => {
   const globals = {};
+
+  const setBestScore = (score = 0) => {
+    localStorage.setItem("flappyFishGameBestScore", score);
+  };
+
+  const getBestScore = () => {
+    return localStorage.getItem("flappyFishGameBestScore");
+  };
+
   let frames = 0;
 
   let activeScreen = {};
@@ -442,7 +468,15 @@ const game = (settings) => {
     },
     GAME_OVER: {
       draw: () => {
-        messageGameOver.draw();
+        const score = globals.scoreBoard.score;
+        let bestScore = getBestScore();
+
+        if (score > bestScore) {
+          setBestScore(score);
+          bestScore = score;
+        }
+
+        messageGameOver.draw(score, bestScore);
       },
       tap: () => {
         frames = 0;
@@ -462,6 +496,10 @@ const game = (settings) => {
 
   return {
     start: () => {
+      if (getBestScore() === null) {
+        setBestScore(0);
+      }
+
       changeScreen(screens.START);
       loop();
       listenEvents();

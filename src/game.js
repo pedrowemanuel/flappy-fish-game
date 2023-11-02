@@ -298,18 +298,22 @@ const createPipes = ({ canvas, context, sprites }) => ({
 
     if (frames === difficulties.easy) {
       this.space = this.space - 5;
+      return;
     }
 
     if (frames === difficulties.medium) {
       this.space = this.space - 5;
+      return;
     }
 
     if (frames === difficulties.difficult) {
       this.space = this.space - 5;
+      return;
     }
 
     if (frames === difficulties.veryDifficult) {
       this.space = this.space - 5;
+      return;
     }
   },
   update(

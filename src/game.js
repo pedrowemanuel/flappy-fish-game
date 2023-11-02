@@ -422,6 +422,8 @@ const game = (settings) => {
         messageGetReady.draw();
       },
       tap: () => {
+        frames = 0;
+
         changeScreen(screens.GAME);
       },
       update: () => {
@@ -479,7 +481,6 @@ const game = (settings) => {
         messageGameOver.draw(score, bestScore);
       },
       tap: () => {
-        frames = 0;
         changeScreen(screens.START);
       },
       update: () => {},

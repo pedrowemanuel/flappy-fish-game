@@ -363,8 +363,8 @@ const createPipes = ({ canvas, context, sprites }) => ({
   update(
     frames = 0,
     flappyFish = null,
-    gameOver = () => {},
-    makePoint = () => {}
+    gameOver = () => { },
+    makePoint = () => { }
   ) {
     const passedIntervalFrames = frames % this.intervalFrames === 0;
 
@@ -411,6 +411,44 @@ const createScoreBoard = ({ canvas, context }) => ({
   },
 });
 
+const createVolumeButton = ({ context, sprites }) => ({
+  modes: {
+    on: {
+      spriteX: 134,
+      spriteY: 363,
+    },
+    off: {
+      spriteX: 134,
+      spriteY: 393,
+    },
+  },
+  width: 37.5,
+  height: 30,
+  x: canvas.width - 40,
+  y: 10,
+  currentMode: 'on',
+  changeMode() {
+    this.currentMode = this.currentMode === 'on' ? 'off' : 'on';
+  },
+  update() {
+  },
+  draw(mode) {
+    this.currentMode = mode;
+    const { spriteX, spriteY } = this.modes[this.currentMode];
+    context.drawImage(
+      sprites,
+      spriteX,
+      spriteY,
+      this.width,
+      this.height,
+      this.x,
+      this.y,
+      this.width,
+      this.height
+    );
+  },
+});
+
 const game = (settings) => {
   const globals = {};
 
@@ -420,6 +458,14 @@ const game = (settings) => {
 
   const getBestScore = () => {
     return localStorage.getItem("flappyFishGameBestScore");
+  };
+
+  const setSoundMode = (mode) => {
+    localStorage.setItem("flappyFishGameSoundMode", mode);
+  };
+
+  const getSoundMode = () => {
+    return localStorage.getItem("flappyFishGameSoundMode");
   };
 
   let frames = 0;
@@ -439,9 +485,9 @@ const game = (settings) => {
     changeScreen(screens.GAME_OVER);
   };
 
-  const tap = () => {
+  const tap = (e) => {
     if (activeScreen.tap != undefined) {
-      activeScreen.tap();
+      activeScreen.tap(e);
     }
   };
 
@@ -454,6 +500,7 @@ const game = (settings) => {
 
   const background = createBackground(settings);
   const messageGetReady = createMessageGetReady(settings);
+  const volumeButton = createVolumeButton(settings);
   const messageGameOver = createMessageGameOver(settings);
 
   const screens = {
@@ -468,11 +515,26 @@ const game = (settings) => {
         globals.floor.draw();
         globals.flappyFish.draw(frames);
         messageGetReady.draw();
+
+        const soundMode = getSoundMode();
+
+        volumeButton.draw(soundMode);
       },
-      tap: () => {
+      tap: (e) => {
         frames = 0;
 
-        changeScreen(screens.GAME);
+        const { offsetX, offsetY } = e;
+
+        // verificando se clicou no botao de volume
+        if ((offsetY >= 10 && offsetY <= 10 + volumeButton.height)
+          && (offsetX >= volumeButton.x && offsetX <= volumeButton.x + volumeButton.width)) {
+
+          volumeButton.changeMode();
+          setSoundMode(volumeButton.currentMode);
+        } else {
+          changeScreen(screens.GAME);
+        }
+
       },
       update: () => {
         globals.floor.update();
@@ -528,10 +590,10 @@ const game = (settings) => {
 
         messageGameOver.draw(score, bestScore);
       },
-      tap: () => {
+      tap: (e) => {
         changeScreen(screens.START);
       },
-      update: () => {},
+      update: () => { },
     },
   };
 
@@ -547,6 +609,10 @@ const game = (settings) => {
     start: () => {
       if (getBestScore() === null) {
         setBestScore(0);
+      }
+
+      if (getSoundMode() === null) {
+        setSoundMode('on');
       }
 
       changeScreen(screens.START);

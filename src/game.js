@@ -451,6 +451,9 @@ const createVolumeButton = ({ context, sprites }) => ({
 
 const game = (settings) => {
   const globals = {};
+  let frames = 0;
+  let activeScreen = {};
+  let soundMode = 'on';
 
   const setBestScore = (score = 0) => {
     localStorage.setItem("flappyFishGameBestScore", score);
@@ -461,6 +464,7 @@ const game = (settings) => {
   };
 
   const setSoundMode = (mode) => {
+    soundMode = mode;
     localStorage.setItem("flappyFishGameSoundMode", mode);
   };
 
@@ -468,9 +472,6 @@ const game = (settings) => {
     return localStorage.getItem("flappyFishGameSoundMode");
   };
 
-  let frames = 0;
-
-  let activeScreen = {};
   const changeScreen = (screen) => {
     activeScreen = screen;
 
@@ -480,7 +481,7 @@ const game = (settings) => {
   };
 
   const gameOver = () => {
-    settings.sounds.hit.play();
+    controllerEffects(() => settings.sounds.hit.play());
 
     changeScreen(screens.GAME_OVER);
   };
@@ -495,6 +496,12 @@ const game = (settings) => {
     document.querySelector("canvas").addEventListener("click", tap);
     window.addEventListener("keyup", tap);
   };
+
+  const controllerEffects = (callback) => {
+    if (soundMode === 'on') {
+      callback();
+    }
+  }
 
   settings.context = canvas.getContext("2d");
 
@@ -516,7 +523,7 @@ const game = (settings) => {
         globals.flappyFish.draw(frames);
         messageGetReady.draw();
 
-        const soundMode = getSoundMode();
+        soundMode = getSoundMode();
 
         volumeButton.draw(soundMode);
       },
@@ -552,7 +559,7 @@ const game = (settings) => {
         globals.scoreBoard.draw();
       },
       tap: () => {
-        settings.sounds.up.play();
+        controllerEffects(() => settings.sounds.up.play());
 
         globals.flappyFish.swimUp();
       },
@@ -570,7 +577,7 @@ const game = (settings) => {
           },
           () => {
             globals.scoreBoard.update();
-            settings.sounds.point.play();
+            controllerEffects(() => settings.sounds.point.play());
           }
         );
 

@@ -196,8 +196,8 @@ const createFlappyFish = ({ context, sprites }) => ({
   x: 10,
   y: 50,
   speed: 0,
-  gravity: 0.1,
-  impulseSize: 3.4,
+  gravity: 0.2,
+  impulseSize: 5,
   movements: [
     { spriteX: 0, spriteY: 0 },
     { spriteX: 0, spriteY: 26 },
